@@ -10,6 +10,8 @@
     "RatQuarryBlockEntityAccessor",
     "RatQuarryBlockEntityMixin",
     "RatQuarryGoalMixin",
+    "RatCropReplantMixin",
+    "RatTreeReplantMixin",
     "DisabledConjuringUpgradeMixin",
     "DisabledInputlessHarvestGoalMixin",
     "OreDoublingMixin",
