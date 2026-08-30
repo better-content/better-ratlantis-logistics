@@ -18,6 +18,5 @@
     "AristocratLootConditionMixin",
     "WildRatTrustMixin"
   ],
-  "client": ["PipeItemRenderMixin"],
   "injectors": {"defaultRequire": 1}
 }
