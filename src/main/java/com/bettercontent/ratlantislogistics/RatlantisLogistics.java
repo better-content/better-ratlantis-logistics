@@ -25,7 +25,9 @@ public final class RatlantisLogistics {
     public static final RegistryObject<Item> RATLANTEAN_BAIT = ITEMS.register("ratlantean_bait", () -> new Item(new Item.Properties().food(new net.minecraft.world.food.FoodProperties.Builder().nutrition(1).fast().build())));
 
     public RatlantisLogistics() {
-        ITEMS.register(net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext.get().getModEventBus());
+        var modBus = net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext.get().getModEventBus();
+        ITEMS.register(modBus);
+        modBus.register(RatlantisLogisticsGameTests.class);
         MinecraftForge.EVENT_BUS.register(this);
         MinecraftForge.EVENT_BUS.register(CraftingGate.class);
     }

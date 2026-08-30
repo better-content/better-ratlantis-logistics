@@ -44,6 +44,9 @@ dependencies {
     compileOnly(fg.deobf("curse.maven:rats-323596:5904296"))
     compileOnly(fg.deobf("curse.maven:pretty-pipes-376737:4769646"))
     compileOnly(fg.deobf("curse.maven:citadel-331936:5633260"))
+    runtimeOnly(fg.deobf("curse.maven:rats-323596:5904296"))
+    runtimeOnly(fg.deobf("curse.maven:pretty-pipes-376737:4769646"))
+    runtimeOnly(fg.deobf("curse.maven:citadel-331936:5633260"))
     testImplementation("org.junit.jupiter:junit-jupiter:5.10.2")
 }
 
@@ -57,8 +60,15 @@ val stageRuntimeJar by tasks.registering(Copy::class) {
 tasks.named("assemble") { dependsOn(stageRuntimeJar) }
 tasks.withType<JavaCompile>().configureEach { options.release.set(17) }
 tasks.test { useJUnitPlatform() }
+val syncGameTestStructures by tasks.registering(Sync::class) {
+    from(layout.projectDirectory.dir("src/main/resources/gameteststructures"))
+    into(layout.projectDirectory.dir("run-gametest/gameteststructures"))
+}
+tasks.matching { it.name.startsWith("prepareRunGameTestServer") }.configureEach {
+    dependsOn(syncGameTestStructures)
+}
 tasks.register("verifyFast") { dependsOn(tasks.named("check")) }
-tasks.register("verifyFull") { dependsOn(tasks.named("verifyFast")) }
+tasks.register("verifyFull") { dependsOn(tasks.named("verifyFast"), tasks.named("runGameTestServer")) }
 tasks.processResources {
     val props = mapOf("minecraft_version" to project.property("minecraft_version"), "forge_version" to project.property("forge_version"), "mod_id" to project.property("mod_id"), "mod_name" to project.property("mod_name"), "mod_version" to project.property("mod_version"))
     inputs.properties(props)
