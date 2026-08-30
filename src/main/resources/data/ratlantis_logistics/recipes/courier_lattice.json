@@ -1,0 +1,1 @@
+{"type":"minecraft:crafting_shaped","pattern":["CMC","MPM","CMC"],"key":{"C":{"item":"rats:marbled_cheese_raw"},"M":{"item":"minecraft:iron_bars"},"P":{"item":"rats:pirat_planks"}},"result":{"item":"ratlantis_logistics:courier_lattice","count":4}}
