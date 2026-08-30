@@ -12,7 +12,7 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 /** Dropped food remains valid rat food, but only Ratlantean bait builds taming trust. */
 @Mixin(value = WildRatTargetFoodGoal.class, remap = false)
 public abstract class WildRatTrustMixin {
-    @Redirect(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;is(Lnet/minecraft/tags/TagKey;)Z"))
+    @Redirect(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;is(Lnet/minecraft/tags/TagKey;)Z"), remap = true)
     private boolean ratlantisLogistics$baitOnlyTrust(ItemStack stack, TagKey<Item> ignoredCheeseTag) {
         return stack.is(RatlantisLogistics.RATLANTEAN_BAIT.get());
     }

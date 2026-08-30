@@ -1,3 +1,5 @@
+import java.util.zip.ZipFile
+
 plugins {
     java
     id("net.minecraftforge.gradle") version "[6.0.24,6.2)"
@@ -41,6 +43,7 @@ repositories {
 
 dependencies {
     minecraft("net.minecraftforge:forge:${property("minecraft_version")}-${property("forge_version")}")
+    annotationProcessor("org.spongepowered:mixin:0.8.5:processor")
     compileOnly(fg.deobf("curse.maven:rats-323596:5904296"))
     compileOnly(fg.deobf("curse.maven:pretty-pipes-376737:4769646"))
     compileOnly(fg.deobf("curse.maven:citadel-331936:5633260"))
@@ -74,4 +77,26 @@ tasks.processResources {
     inputs.properties(props)
     filesMatching(listOf("META-INF/mods.toml", "pack.mcmeta")) { expand(props) }
 }
-mixin { config("ratlantis_logistics.mixins.json") }
+mixin {
+    add(sourceSets.main.get(), "ratlantis_logistics.refmap.json")
+    config("ratlantis_logistics.mixins.json")
+}
+
+val verifyRuntimeMixinRefmap by tasks.registering {
+    group = "verification"
+    description = "Requires the release JAR to contain the production mappings used by the Rats trust mixin."
+    dependsOn(stageRuntimeJar)
+    doLast {
+        val runtimeJar = layout.buildDirectory.file("libs/${base.archivesName.get()}-$version.jar").get().asFile
+        ZipFile(runtimeJar).use { zip ->
+            val entry = zip.getEntry("ratlantis_logistics.refmap.json")
+                ?: throw GradleException("Runtime JAR is missing ratlantis_logistics.refmap.json: $runtimeJar")
+            val text = zip.getInputStream(entry).bufferedReader().use { it.readText() }
+            check(text.contains("m_8037_") && text.contains("m_204117_")) {
+                "Runtime refmap lacks production mappings for WildRatTrustMixin: $runtimeJar"
+            }
+        }
+    }
+}
+
+tasks.named("verifyFull") { dependsOn(verifyRuntimeMixinRefmap) }
