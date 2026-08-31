@@ -29,7 +29,6 @@ public final class RatlantisLogistics {
         ITEMS.register(modBus);
         modBus.register(RatlantisLogisticsGameTests.class);
         MinecraftForge.EVENT_BUS.register(this);
-        MinecraftForge.EVENT_BUS.register(CraftingGate.class);
     }
 
     @SubscribeEvent(priority = EventPriority.HIGHEST)
