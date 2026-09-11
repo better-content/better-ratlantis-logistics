@@ -10,6 +10,7 @@ group = "com.bettercontent"
 version = property("mod_version") as String
 base { archivesName.set(property("artifact_name") as String) }
 java { toolchain.languageVersion.set(JavaLanguageVersion.of(17)) }
+val gameTestFixtures = sourceSets.create("gameTestFixtures")
 
 minecraft {
     mappings("official", property("minecraft_version") as String)
@@ -25,6 +26,7 @@ minecraft {
         create("client")
         create("server") { arg("--nogui") }
         create("gameTestServer") {
+            mods { named(project.property("mod_id") as String) { source(gameTestFixtures) } }
             workingDirectory(project.file("run-gametest"))
             property("forge.enableGameTest", "true")
             property("forge.gameTestServer", "true")
@@ -63,13 +65,6 @@ val stageRuntimeJar by tasks.registering(Copy::class) {
 tasks.named("assemble") { dependsOn(stageRuntimeJar) }
 tasks.withType<JavaCompile>().configureEach { options.release.set(17) }
 tasks.test { useJUnitPlatform() }
-val syncGameTestStructures by tasks.registering(Sync::class) {
-    from(layout.projectDirectory.dir("src/main/resources/gameteststructures"))
-    into(layout.projectDirectory.dir("run-gametest/gameteststructures"))
-}
-tasks.matching { it.name.startsWith("prepareRunGameTestServer") }.configureEach {
-    dependsOn(syncGameTestStructures)
-}
 tasks.register("verifyFast") { dependsOn(tasks.named("check")) }
 tasks.register("verifyFull") { dependsOn(tasks.named("verifyFast"), tasks.named("runGameTestServer")) }
 tasks.processResources {
@@ -100,3 +95,5 @@ val verifyRuntimeMixinRefmap by tasks.registering {
 }
 
 tasks.named("verifyFull") { dependsOn(verifyRuntimeMixinRefmap) }
+
+apply(from = "gametest/execution-evidence.gradle")
