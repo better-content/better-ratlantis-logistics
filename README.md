@@ -1,21 +1,15 @@
 # Ratlantis Logistics
 
-Better Content's Rats compatibility rules and logistics crafting components.
+Better Content-owned Forge mod that makes Ratlantis the origin of scalable logistics.
 
-## Verification
+Requires Java 17, Minecraft 1.20.1, and Forge 47.4.13. Build from this repository with its own checked-in Gradle wrapper:
 
-Run `./gradlew verifyFull` before committing. It runs deterministic policy checks, seven
-GameTests, and runtime mixin-refmap validation. The GameTests exercise the registered feeding
-handler, guaranteed taming and owner assignment, non-bait rejection, the actual transformed Rats
-crop-harvesting goal, and nearest eligible seed consumption.
+```sh
+./gradlew --no-daemon verifyFull stageRuntimeJar
+```
 
-The test-only eligible seed tag lives in `src/gameTestFixtures/resources` and is excluded from the
-runtime JAR. Crop fixtures disable harvested drops only during their synchronous action so the
-assertions measure consumption of the supplied input. These tests cover this mod's integration
-rules; they do not claim comprehensive upstream Rats or Pretty Pipes transport coverage.
+`verifyFull` includes deterministic tests and the focused Forge GameTest lane. Its test-only fixture resources do not ship in the production JAR. The reobfuscated runtime artifact is `build/libs/ratlantis-logistics-0.1.0.jar`.
 
-Each GameTest invocation retains a fresh world, logs, and `execution.json` under
-`build/gametest/<run-token>/`. Verification requires the current token and every reviewed test ID
-in `gametest/profiles/full.txt` to register, execute, and pass. `verifyGameTestEvidenceGuard` checks
-missing, stale, incomplete, duplicate, and failed results without starting Forge. Its script is
-repository-local under `gametest/`; the existing `gradle/` wrapper symlink is not used for test logic.
+Local verification does not authorize deployment or pack tests. Generated build, cache, and runtime data stay untracked.
+
+Licensed under GPL-3.0-or-later; see [LICENSE](LICENSE). Contribution and validation requirements are in [AGENTS.md](AGENTS.md).

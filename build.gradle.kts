@@ -2,8 +2,8 @@ import java.util.zip.ZipFile
 
 plugins {
     java
-    id("net.minecraftforge.gradle") version "[6.0.24,6.2)"
-    id("org.spongepowered.mixin") version "0.7.+"
+    id("net.minecraftforge.gradle") version "6.0.54"
+    id("org.spongepowered.mixin") version "0.7.38"
 }
 
 group = "com.bettercontent"
