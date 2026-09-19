@@ -88,7 +88,12 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter:5.10.2")
 }
 
-tasks.named<Jar>("jar") { finalizedBy("reobfJar") }
+tasks.named<Jar>("jar") {
+    // MixinGradle contributes the refmap while processResources copies it for
+    // development GameTests; keep one deterministic JAR entry.
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    finalizedBy("reobfJar")
+}
 val stageRuntimeJar by tasks.registering(Copy::class) {
     dependsOn(tasks.named("reobfJar"))
     from(layout.buildDirectory.file("reobfJar/output.jar"))
@@ -101,6 +106,11 @@ tasks.test { useJUnitPlatform() }
 tasks.register("verifyFast") { dependsOn(tasks.named("check")) }
 tasks.register("verifyFull") { dependsOn(tasks.named("verifyFast"), tasks.named("runGameTestServer")) }
 tasks.processResources {
+    // The Mixin processor writes the refmap under build/tmp.  Copy it into
+    // development and GameTest resources as well as the reobfuscated JAR;
+    // otherwise redirects silently do not apply in provider verification.
+    dependsOn(tasks.compileJava)
+    from(layout.buildDirectory.file("tmp/compileJava/ratlantis_logistics.refmap.json"))
     val props = mapOf("minecraft_version" to project.property("minecraft_version"), "forge_version" to project.property("forge_version"), "mod_id" to project.property("mod_id"), "mod_name" to project.property("mod_name"), "mod_version" to project.property("mod_version"))
     inputs.properties(props)
     filesMatching(listOf("META-INF/mods.toml", "pack.mcmeta")) { expand(props) }

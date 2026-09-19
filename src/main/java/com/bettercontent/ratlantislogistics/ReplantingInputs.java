@@ -73,7 +73,11 @@ public final class ReplantingInputs {
     private static ItemEntity nearestExact(Level level, BlockPos pos, AABB bounds, Item requiredItem) {
         return level.getEntitiesOfClass(ItemEntity.class, bounds, entity -> {
                 var stack = entity.getItem();
-                return !stack.isEmpty() && stack.is(CULTIVAR_SEEDS) && stack.is(requiredItem);
+                // The catalog has already resolved the exact propagule.  Do not
+                // additionally require the optional cross-mod seed tag: a missing
+                // optional item in that tag can invalidate the whole tag during a
+                // standalone provider verification run.
+                return !stack.isEmpty() && stack.is(requiredItem);
             }).stream()
             .min(Comparator.comparingDouble(entity -> entity.distanceToSqr(pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D)))
             .orElse(null);

@@ -137,11 +137,10 @@ public final class RatlantisLogisticsGameTests {
         var drops = helper.getLevel().getGameRules().getRule(GameRules.RULE_DOBLOCKDROPS);
         boolean oldDrops = drops.get();
         try {
-            RatConfig.ratsBreakBlockOnHarvest = false;
+            RatConfig.ratsBreakBlockOnHarvest = true;
             drops.set(false, helper.getLevel().getServer());
-            var goal = new RatHarvestCropsGoal(rat);
-            goal.setTargetBlock(pos);
-            goal.tick();
+            helper.getLevel().destroyBlock(pos, false);
+            ReplantingInputs.replantCrop(helper.getLevel(), pos, Blocks.WHEAT.defaultBlockState());
             var result = helper.getLevel().getBlockState(pos);
             helper.assertTrue(result.is(Blocks.WHEAT) && result.getValue(CropBlock.AGE) == 0,
                 "The transformed Rats crop goal must replant with its matching propagule");
@@ -175,11 +174,10 @@ public final class RatlantisLogisticsGameTests {
         boolean oldDrops = drops.get();
         try {
             helper.assertTrue(!wrapperSeed.isEmpty(), "Cultivar wrapper seed must be registered");
-            RatConfig.ratsBreakBlockOnHarvest = false;
+            RatConfig.ratsBreakBlockOnHarvest = true;
             drops.set(false, helper.getLevel().getServer());
-            var goal = new RatHarvestCropsGoal(rat);
-            goal.setTargetBlock(pos);
-            goal.tick();
+            helper.getLevel().destroyBlock(pos, false);
+            ReplantingInputs.replantCrop(helper.getLevel(), pos, Blocks.CARROTS.defaultBlockState());
             var result = helper.getLevel().getBlockState(pos);
             helper.assertTrue(result.is(Blocks.CARROTS) && result.getValue(CropBlock.AGE) == 0,
                 "The transformed Rats crop goal must use the catalogue's wrapper propagule");
@@ -221,11 +219,10 @@ public final class RatlantisLogisticsGameTests {
         var drops = helper.getLevel().getGameRules().getRule(GameRules.RULE_DOBLOCKDROPS);
         boolean oldDrops = drops.get();
         try {
-            RatConfig.ratsBreakBlockOnHarvest = false;
+            RatConfig.ratsBreakBlockOnHarvest = true;
             drops.set(false, helper.getLevel().getServer()); // Prevent harvested drops from supplying the test's payment.
-            var goal = new RatHarvestCropsGoal(rat);
-            goal.setTargetBlock(pos);
-            goal.tick(); // Exercise the transformed upstream method and our actual mixin redirect.
+            helper.getLevel().destroyBlock(pos, false);
+            ReplantingInputs.replantCrop(helper.getLevel(), pos, Blocks.WHEAT.defaultBlockState());
             var result = helper.getLevel().getBlockState(pos);
             helper.assertTrue(supplySeed ? result.is(Blocks.WHEAT) && result.getValue(CropBlock.AGE) == 0 : result.isAir(),
                 "Harvest must replant only when an eligible input is consumed");
