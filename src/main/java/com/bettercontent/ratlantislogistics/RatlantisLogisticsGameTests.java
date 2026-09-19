@@ -16,9 +16,7 @@ import com.github.alexthe666.rats.server.entity.rat.RatCommand;
 import com.github.alexthe666.rats.server.entity.rat.TamedRat;
 import com.mojang.authlib.GameProfile;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.tags.TagKey;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -124,18 +122,52 @@ public final class RatlantisLogisticsGameTests {
     }
 
     @GameTest(templateNamespace = RatlantisLogistics.MOD_ID, template = "farm", timeoutTicks = 40)
-    public static void replantingSelectsNearestEligibleInput(GameTestHelper helper) {
+    public static void cropGoalUsesNearestMatchingPropagule(GameTestHelper helper) {
         BlockPos pos = helper.absolutePos(new BlockPos(3, 1, 3));
-        var near = drop(helper, pos, new ItemStack(Items.WHEAT_SEEDS, 3), 0.1);
-        var far = drop(helper, pos, new ItemStack(Items.WHEAT_SEEDS, 2), 1.1);
-        var wrong = drop(helper, pos, new ItemStack(Items.COBBLESTONE, 3), 0.0);
+        helper.getLevel().setBlockAndUpdate(pos.below(), Blocks.FARMLAND.defaultBlockState());
+        helper.getLevel().setBlockAndUpdate(pos, Blocks.WHEAT.defaultBlockState().setValue(CropBlock.AGE, 7));
+        var wrongTaggedSeed = drop(helper, pos, new ItemStack(Items.BEETROOT_SEEDS, 3), 0.0);
+        var matchingNear = drop(helper, pos, new ItemStack(Items.WHEAT_SEEDS, 3), 0.1);
+        var matchingFar = drop(helper, pos, new ItemStack(Items.WHEAT_SEEDS, 2), 1.1);
+        TamedRat rat = RatsEntityRegistry.TAMED_RAT.get().create(helper.getLevel());
+        rat.setNoAi(true);
+        rat.moveTo(pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5, 0, 0);
+        helper.getLevel().addFreshEntity(rat);
+        boolean oldBreak = RatConfig.ratsBreakBlockOnHarvest;
+        var drops = helper.getLevel().getGameRules().getRule(GameRules.RULE_DOBLOCKDROPS);
+        boolean oldDrops = drops.get();
         try {
-            helper.assertTrue(ReplantingInputs.consumeCropSeed(helper.getLevel(), pos), "Eligible input must be found");
-            helper.assertTrue(near.getItem().getCount() == 2 && far.getItem().getCount() == 2 && wrong.getItem().getCount() == 3,
-                "Consume only one seed from the nearest eligible stack");
-            near.discard(); far.discard();
-            helper.assertTrue(!ReplantingInputs.consumeCropSeed(helper.getLevel(), pos), "An unrelated item cannot pay for replanting");
-        } finally { near.discard(); far.discard(); wrong.discard(); }
+            RatConfig.ratsBreakBlockOnHarvest = false;
+            drops.set(false, helper.getLevel().getServer());
+            var goal = new RatHarvestCropsGoal(rat);
+            goal.setTargetBlock(pos);
+            goal.tick();
+            var result = helper.getLevel().getBlockState(pos);
+            helper.assertTrue(result.is(Blocks.WHEAT) && result.getValue(CropBlock.AGE) == 0,
+                "The transformed Rats crop goal must replant with its matching propagule");
+            helper.assertTrue(wrongTaggedSeed.getItem().getCount() == 3
+                    && matchingNear.getItem().getCount() == 2 && matchingFar.getItem().getCount() == 2,
+                "A nearer tagged propagule for another crop must not be consumed");
+        } finally {
+            RatConfig.ratsBreakBlockOnHarvest = oldBreak;
+            drops.set(oldDrops, helper.getLevel().getServer());
+            rat.discard();
+            wrongTaggedSeed.discard(); matchingNear.discard(); matchingFar.discard();
+        }
+        helper.succeed();
+    }
+
+    @GameTest(templateNamespace = RatlantisLogistics.MOD_ID, template = "farm", timeoutTicks = 40)
+    public static void rejectedCropPlacementRefundsMatchingPropagule(GameTestHelper helper) {
+        BlockPos fixture = helper.absolutePos(new BlockPos(3, 1, 3));
+        BlockPos target = new BlockPos(fixture.getX(), helper.getLevel().getMaxBuildHeight(), fixture.getZ());
+        var seed = drop(helper, target, new ItemStack(Items.WHEAT_SEEDS, 2), 0.0);
+        try {
+            helper.assertTrue(!ReplantingInputs.replantCrop(helper.getLevel(), target, Blocks.WHEAT.defaultBlockState()),
+                "Out-of-height placement must be rejected");
+            helper.assertTrue(seed.getItem().getCount() == 2,
+                "A rejected placement must leave its matching propagule untouched");
+        } finally { seed.discard(); }
         helper.succeed();
     }
 
@@ -144,8 +176,6 @@ public final class RatlantisLogisticsGameTests {
         helper.getLevel().setBlockAndUpdate(pos.below(), Blocks.FARMLAND.defaultBlockState());
         helper.getLevel().setBlockAndUpdate(pos, Blocks.WHEAT.defaultBlockState().setValue(CropBlock.AGE, 7));
         var seed = supplySeed ? drop(helper, pos, new ItemStack(Items.WHEAT_SEEDS, 1), 0.0) : null;
-        helper.assertTrue(new ItemStack(Items.WHEAT_SEEDS).is(TagKey.create(Registries.ITEM,
-            new ResourceLocation("bumblezone_cultivars", "seeds"))), "GameTest-only eligible seed tag must be loaded");
         TamedRat rat = RatsEntityRegistry.TAMED_RAT.get().create(helper.getLevel());
         rat.setNoAi(true);
         rat.moveTo(pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5, 0, 0);

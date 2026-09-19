@@ -17,6 +17,6 @@ abstract class RatCropReplantMixin {
         remap = true
     )
     private boolean ratlantisLogistics$consumeSeedBeforeReplant(Level level, BlockPos pos, BlockState state) {
-        return ReplantingInputs.consumeCropSeed(level, pos) && level.setBlockAndUpdate(pos, state);
+        return ReplantingInputs.replantCrop(level, pos, state);
     }
 }
