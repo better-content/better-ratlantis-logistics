@@ -1,5 +1,6 @@
 package com.bettercontent.ratlantislogistics;
 
+import com.bettercontent.bumblezonecultivars.CultivarCatalog;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
@@ -9,6 +10,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
+import net.minecraftforge.registries.ForgeRegistries;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Comparator;
@@ -30,13 +32,20 @@ public final class ReplantingInputs {
      * succeeds.  That keeps a rejected placement from eating a nearby propagule.
      */
     public static boolean replantCrop(Level level, BlockPos pos, BlockState state) {
-        Item requiredPropagule = state.getBlock().asItem();
+        Item requiredPropagule = propaguleFor(state);
         if (requiredPropagule == null) return false;
 
-        ItemEntity candidate = nearest(level, pos, new AABB(pos).inflate(1.5D), requiredPropagule);
+        ItemEntity candidate = nearestExact(level, pos, new AABB(pos).inflate(1.5D), requiredPropagule);
         if (candidate == null || !level.setBlockAndUpdate(pos, state)) return false;
         consume(candidate);
         return true;
+    }
+
+    @Nullable
+    private static Item propaguleFor(BlockState state) {
+        var cultivar = CultivarCatalog.byPlant(state.getBlock());
+        if (cultivar == null) return state.getBlock().asItem();
+        return ForgeRegistries.ITEMS.getValue(new ResourceLocation(cultivar.seedItem()));
     }
 
     public static boolean consumeSapling(Level level, BlockPos pos, Item sapling) {
@@ -55,6 +64,16 @@ public final class ReplantingInputs {
         return level.getEntitiesOfClass(ItemEntity.class, bounds, entity -> {
                 var stack = entity.getItem();
                 return !stack.isEmpty() && stack.is(CULTIVAR_SEEDS) && (requiredItem == null || stack.is(requiredItem));
+            }).stream()
+            .min(Comparator.comparingDouble(entity -> entity.distanceToSqr(pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D)))
+            .orElse(null);
+    }
+
+    @Nullable
+    private static ItemEntity nearestExact(Level level, BlockPos pos, AABB bounds, Item requiredItem) {
+        return level.getEntitiesOfClass(ItemEntity.class, bounds, entity -> {
+                var stack = entity.getItem();
+                return !stack.isEmpty() && stack.is(requiredItem);
             }).stream()
             .min(Comparator.comparingDouble(entity -> entity.distanceToSqr(pos.getX() + 0.5D, pos.getY() + 0.5D, pos.getZ() + 0.5D)))
             .orElse(null);

@@ -12,6 +12,9 @@ jobs:
   verify:
     runs-on: ubuntu-latest
     timeout-minutes: 45
+    env:
+      BC_CUSTOM_MOD_JAR_DIR: ${{ github.workspace }}/build/ci-provider-jars
+      BC_BUMBLEZONE_CULTIVARS_SOURCE: ${{ github.workspace }}/build/ci-bumblezone-cultivars
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4
@@ -19,6 +22,17 @@ jobs:
           distribution: temurin
           java-version: '17'
       - uses: gradle/actions/setup-gradle@v4
+      - name: Check out pinned Cultivars provider
+        uses: actions/checkout@v4
+        with:
+          repository: better-content/bumblezone-cultivars
+          ref: 35fb49328c9f13630d8efde428ea668b60c08b14
+          path: build/ci-bumblezone-cultivars
+      - name: Stage pinned Cultivars provider and mapped Bumblezone runtime
+        run: |
+          ./build/ci-bumblezone-cultivars/gradlew -p build/ci-bumblezone-cultivars --no-daemon remapBumblezoneDevelopment stageRuntimeJar
+          mkdir -p "$BC_CUSTOM_MOD_JAR_DIR"
+          cp build/ci-bumblezone-cultivars/build/libs/bumblezone-cultivars-0.1.0.jar "$BC_CUSTOM_MOD_JAR_DIR/"
       - name: Verify repository
         run: ./gradlew --no-daemon verifyFull
       - name: Preserve verification evidence

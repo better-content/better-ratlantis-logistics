@@ -12,6 +12,29 @@ base { archivesName.set(property("artifact_name") as String) }
 java { toolchain.languageVersion.set(JavaLanguageVersion.of(17)) }
 val gameTestFixtures = sourceSets.create("gameTestFixtures")
 
+// CI and fresh-release builds provide verified runtime JARs explicitly.
+// Ordinary local builds retain the canonical sibling build/libs convention.
+fun betterContentJar(repository: String, artifact: String): java.io.File {
+    val directory = providers.environmentVariable("BC_CUSTOM_MOD_JAR_DIR").orNull
+    require(directory == null || directory.isNotBlank()) { "BC_CUSTOM_MOD_JAR_DIR must not be blank" }
+    val jar = if (directory == null) file("../$repository/build/libs/$artifact") else file(directory).resolve(artifact)
+    require(jar.isFile) {
+        "Missing Better Content provider $artifact at $jar; prepare BC_CUSTOM_MOD_JAR_DIR or build $repository first"
+    }
+    return jar
+}
+
+fun bumblezoneDevelopmentJar(): java.io.File {
+    val source = providers.environmentVariable("BC_BUMBLEZONE_CULTIVARS_SOURCE").orNull
+    require(source == null || source.isNotBlank()) { "BC_BUMBLEZONE_CULTIVARS_SOURCE must not be blank" }
+    val jar = if (source == null) file("../bumblezone-cultivars/build/development-dependencies/bumblezone-mapped.jar")
+        else file(source).resolve("build/development-dependencies/bumblezone-mapped.jar")
+    require(jar.isFile) {
+        "Missing mapped Bumblezone runtime at $jar; run bumblezone-cultivars remapBumblezoneDevelopment first"
+    }
+    return jar
+}
+
 minecraft {
     mappings("official", property("minecraft_version") as String)
     copyIdeResources = true
@@ -41,6 +64,13 @@ repositories {
     maven("https://repo.spongepowered.org/repository/maven-public/")
     maven("https://www.cursemaven.com") { content { includeGroup("curse.maven") } }
     mavenCentral()
+    ivy {
+        name = "bumblezoneCultivarsLocal"
+        url = uri(betterContentJar("bumblezone-cultivars", "bumblezone-cultivars-0.1.0.jar").parentFile)
+        patternLayout { artifact("[artifact]-[revision].[ext]") }
+        metadataSources { artifact() }
+        content { includeGroup("bettercontent.local") }
+    }
 }
 
 dependencies {
@@ -49,9 +79,12 @@ dependencies {
     compileOnly(fg.deobf("curse.maven:rats-323596:5904296"))
     compileOnly(fg.deobf("curse.maven:pretty-pipes-376737:4769646"))
     compileOnly(fg.deobf("curse.maven:citadel-331936:5633260"))
+    compileOnly(fg.deobf("bettercontent.local:bumblezone-cultivars:0.1.0"))
     runtimeOnly(fg.deobf("curse.maven:rats-323596:5904296"))
     runtimeOnly(fg.deobf("curse.maven:pretty-pipes-376737:4769646"))
     runtimeOnly(fg.deobf("curse.maven:citadel-331936:5633260"))
+    runtimeOnly(files(bumblezoneDevelopmentJar()))
+    runtimeOnly(fg.deobf("bettercontent.local:bumblezone-cultivars:0.1.0"))
     testImplementation("org.junit.jupiter:junit-jupiter:5.10.2")
 }
 

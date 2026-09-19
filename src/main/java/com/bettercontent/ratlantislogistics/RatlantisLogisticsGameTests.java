@@ -158,6 +158,43 @@ public final class RatlantisLogisticsGameTests {
     }
 
     @GameTest(templateNamespace = RatlantisLogistics.MOD_ID, template = "farm", timeoutTicks = 40)
+    public static void cropGoalUsesCataloguedWrapperPropagule(GameTestHelper helper) {
+        BlockPos pos = helper.absolutePos(new BlockPos(3, 1, 3));
+        helper.getLevel().setBlockAndUpdate(pos.below(), Blocks.FARMLAND.defaultBlockState());
+        helper.getLevel().setBlockAndUpdate(pos, Blocks.CARROTS.defaultBlockState().setValue(CropBlock.AGE, 7));
+        var wrongTaggedSeed = drop(helper, pos, new ItemStack(Items.WHEAT_SEEDS, 3), 0.0);
+        var wrapperSeed = new ItemStack(ForgeRegistries.ITEMS.getValue(
+            new ResourceLocation("bumblezone_cultivars", "minecraft_carrot_seeds")), 2);
+        var matchingWrapperSeed = drop(helper, pos, wrapperSeed, 0.1);
+        TamedRat rat = RatsEntityRegistry.TAMED_RAT.get().create(helper.getLevel());
+        rat.setNoAi(true);
+        rat.moveTo(pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5, 0, 0);
+        helper.getLevel().addFreshEntity(rat);
+        boolean oldBreak = RatConfig.ratsBreakBlockOnHarvest;
+        var drops = helper.getLevel().getGameRules().getRule(GameRules.RULE_DOBLOCKDROPS);
+        boolean oldDrops = drops.get();
+        try {
+            helper.assertTrue(!wrapperSeed.isEmpty(), "Cultivar wrapper seed must be registered");
+            RatConfig.ratsBreakBlockOnHarvest = false;
+            drops.set(false, helper.getLevel().getServer());
+            var goal = new RatHarvestCropsGoal(rat);
+            goal.setTargetBlock(pos);
+            goal.tick();
+            var result = helper.getLevel().getBlockState(pos);
+            helper.assertTrue(result.is(Blocks.CARROTS) && result.getValue(CropBlock.AGE) == 0,
+                "The transformed Rats crop goal must use the catalogue's wrapper propagule");
+            helper.assertTrue(wrongTaggedSeed.getItem().getCount() == 3 && matchingWrapperSeed.getItem().getCount() == 1,
+                "A nearer tagged propagule for another crop must not consume the wrapper seed");
+        } finally {
+            RatConfig.ratsBreakBlockOnHarvest = oldBreak;
+            drops.set(oldDrops, helper.getLevel().getServer());
+            rat.discard();
+            wrongTaggedSeed.discard(); matchingWrapperSeed.discard();
+        }
+        helper.succeed();
+    }
+
+    @GameTest(templateNamespace = RatlantisLogistics.MOD_ID, template = "farm", timeoutTicks = 40)
     public static void rejectedCropPlacementRefundsMatchingPropagule(GameTestHelper helper) {
         BlockPos fixture = helper.absolutePos(new BlockPos(3, 1, 3));
         BlockPos target = new BlockPos(fixture.getX(), helper.getLevel().getMaxBuildHeight(), fixture.getZ());
