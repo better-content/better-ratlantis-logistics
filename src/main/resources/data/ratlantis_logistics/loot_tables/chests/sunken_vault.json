@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:chest",
+  "pools": [
+    {
+      "rolls": {"type": "minecraft:uniform", "min": 2, "max": 4},
+      "entries": [
+        {"type": "minecraft:item", "name": "rats:raw_oratchalcum", "weight": 6},
+        {"type": "minecraft:item", "name": "rats:marbled_cheese_raw", "weight": 4},
+        {"type": "minecraft:item", "name": "minecraft:sponge", "weight": 2},
+        {"type": "minecraft:item", "name": "rats:gem_of_ratlantis", "weight": 1}
+      ]
+    }
+  ]
+}
