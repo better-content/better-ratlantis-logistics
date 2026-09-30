@@ -1,0 +1,7 @@
+{
+  "item.better_ratlantis_logistics.courier_lattice": "Courier Lattice",
+  "item.better_ratlantis_logistics.oratchalcum_mechanism": "Oratchalcum Mechanism",
+  "item.better_ratlantis_logistics.arcane_logistics_core": "Arcane Logistics Core",
+  "item.better_ratlantis_logistics.ratlantean_bait": "Ratlantean Bait",
+  "message.better_ratlantis_logistics.missing_component": "This craft also consumes %s from your inventory"
+}

@@ -1,4 +1,4 @@
-package com.bettercontent.ratlantislogistics.client;
+package com.bettercontent.betterratlantislogistics.client;
 
 import com.github.alexthe666.rats.registry.RatsEntityRegistry;
 import com.github.alexthe666.rats.server.entity.rat.Rat;

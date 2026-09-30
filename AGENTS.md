@@ -2,10 +2,10 @@
 
 ## Scope
 
-This repository contains the Better Content-owned Forge mod **Ratlantis Logistics**.
+This repository contains the Better Content-owned Forge mod **Better Ratlantis Logistics**.
 
-- Mod ID: `ratlantis_logistics`
-- Artifact: `ratlantis-logistics-<version>.jar`
+- Mod ID: `better_ratlantis_logistics`
+- Artifact: `better-ratlantis-logistics-<version>.jar`
 - Java 17, Minecraft 1.20.1, Forge 47.4.13
 
 ## Validation and release

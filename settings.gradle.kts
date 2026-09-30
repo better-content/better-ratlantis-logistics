@@ -6,4 +6,4 @@ pluginManagement {
         mavenCentral()
     }
 }
-rootProject.name = "ratlantis-logistics"
+rootProject.name = "better-ratlantis-logistics"

@@ -27,10 +27,10 @@ fun betterContentJar(repository: String, artifact: String): java.io.File {
 fun bumblezoneDevelopmentJar(): java.io.File {
     val source = providers.environmentVariable("BC_BUMBLEZONE_CULTIVARS_SOURCE").orNull
     require(source == null || source.isNotBlank()) { "BC_BUMBLEZONE_CULTIVARS_SOURCE must not be blank" }
-    val jar = if (source == null) file("../bumblezone-cultivars/build/development-dependencies/bumblezone-mapped.jar")
+    val jar = if (source == null) file("../better-bumblezone-crops/build/development-dependencies/bumblezone-mapped.jar")
         else file(source).resolve("build/development-dependencies/bumblezone-mapped.jar")
     require(jar.isFile) {
-        "Missing mapped Bumblezone runtime at $jar; run bumblezone-cultivars remapBumblezoneDevelopment first"
+        "Missing mapped Bumblezone runtime at $jar; run better-bumblezone-crops remapBumblezoneDevelopment first"
     }
     return jar
 }
@@ -66,7 +66,7 @@ repositories {
     mavenCentral()
     ivy {
         name = "bumblezoneCultivarsLocal"
-        url = uri(betterContentJar("bumblezone-cultivars", "bumblezone-cultivars-0.1.0.jar").parentFile)
+        url = uri(betterContentJar("better-bumblezone-crops", "better-bumblezone-crops-0.1.0.jar").parentFile)
         patternLayout { artifact("[artifact]-[revision].[ext]") }
         metadataSources { artifact() }
         content { includeGroup("bettercontent.local") }
@@ -79,12 +79,12 @@ dependencies {
     compileOnly(fg.deobf("curse.maven:rats-323596:5904296"))
     compileOnly(fg.deobf("curse.maven:pretty-pipes-376737:4769646"))
     compileOnly(fg.deobf("curse.maven:citadel-331936:5633260"))
-    compileOnly(fg.deobf("bettercontent.local:bumblezone-cultivars:0.1.0"))
+    compileOnly(fg.deobf("bettercontent.local:better-bumblezone-crops:0.1.0"))
     runtimeOnly(fg.deobf("curse.maven:rats-323596:5904296"))
     runtimeOnly(fg.deobf("curse.maven:pretty-pipes-376737:4769646"))
     runtimeOnly(fg.deobf("curse.maven:citadel-331936:5633260"))
     runtimeOnly(files(bumblezoneDevelopmentJar()))
-    runtimeOnly(fg.deobf("bettercontent.local:bumblezone-cultivars:0.1.0"))
+    runtimeOnly(fg.deobf("bettercontent.local:better-bumblezone-crops:0.1.0"))
     testImplementation("org.junit.jupiter:junit-jupiter:5.10.2")
 }
 
@@ -110,14 +110,14 @@ tasks.processResources {
     // development and GameTest resources as well as the reobfuscated JAR;
     // otherwise redirects silently do not apply in provider verification.
     dependsOn(tasks.compileJava)
-    from(layout.buildDirectory.file("tmp/compileJava/ratlantis_logistics.refmap.json"))
+    from(layout.buildDirectory.file("tmp/compileJava/better_ratlantis_logistics.refmap.json"))
     val props = mapOf("minecraft_version" to project.property("minecraft_version"), "forge_version" to project.property("forge_version"), "mod_id" to project.property("mod_id"), "mod_name" to project.property("mod_name"), "mod_version" to project.property("mod_version"))
     inputs.properties(props)
     filesMatching(listOf("META-INF/mods.toml", "pack.mcmeta")) { expand(props) }
 }
 mixin {
-    add(sourceSets.main.get(), "ratlantis_logistics.refmap.json")
-    config("ratlantis_logistics.mixins.json")
+    add(sourceSets.main.get(), "better_ratlantis_logistics.refmap.json")
+    config("better_ratlantis_logistics.mixins.json")
 }
 
 val verifyRuntimeMixinRefmap by tasks.registering {
@@ -127,8 +127,8 @@ val verifyRuntimeMixinRefmap by tasks.registering {
     doLast {
         val runtimeJar = layout.buildDirectory.file("libs/${base.archivesName.get()}-$version.jar").get().asFile
         ZipFile(runtimeJar).use { zip ->
-            val entry = zip.getEntry("ratlantis_logistics.refmap.json")
-                ?: throw GradleException("Runtime JAR is missing ratlantis_logistics.refmap.json: $runtimeJar")
+            val entry = zip.getEntry("better_ratlantis_logistics.refmap.json")
+                ?: throw GradleException("Runtime JAR is missing better_ratlantis_logistics.refmap.json: $runtimeJar")
             val text = zip.getInputStream(entry).bufferedReader().use { it.readText() }
             check(text.contains("m_8037_") && text.contains("m_204117_")) {
                 "Runtime refmap lacks production mappings for WildRatTrustMixin: $runtimeJar"

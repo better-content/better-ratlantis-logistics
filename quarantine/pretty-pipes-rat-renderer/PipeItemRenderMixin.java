@@ -1,6 +1,6 @@
-package com.bettercontent.ratlantislogistics.mixin;
+package com.bettercontent.betterratlantislogistics.mixin;
 
-import com.bettercontent.ratlantislogistics.client.RatCourierRenderer;
+import com.bettercontent.betterratlantislogistics.client.RatCourierRenderer;
 import com.mojang.blaze3d.vertex.PoseStack;
 import de.ellpeck.prettypipes.network.PipeItem;
 import de.ellpeck.prettypipes.pipe.PipeBlockEntity;

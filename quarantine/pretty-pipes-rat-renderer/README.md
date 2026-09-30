@@ -5,7 +5,7 @@ miniature rat carrying the routed stack. It is quarantined because the 3D
 integration did not render correctly in the pack.
 
 The sources are deliberately outside `src/`, and the mixin is deliberately
-absent from `ratlantis_logistics.mixins.json`. Consequently they are neither
+absent from `better_ratlantis_logistics.mixins.json`. Consequently they are neither
 compiled nor registered at runtime, and Pretty Pipes retains its native item
 renderer.
 

@@ -25,7 +25,7 @@ versionRange="[1.15.0,1.16)"
 ordering="AFTER"
 side="BOTH"
 [[dependencies.${mod_id}]]
-modId="bumblezone_cultivars"
+modId="better_bumblezone_crops"
 mandatory=true
 versionRange="[0.1.0,)"
 ordering="AFTER"
