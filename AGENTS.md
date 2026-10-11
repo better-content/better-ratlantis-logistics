@@ -1,13 +1,9 @@
-# AGENTS.md
+# Better Ratlantis Logistics — retired
 
-## Scope
+Forge 1.20.1 / Java 17; mod ID `better_ratlantis_logistics`.
+History-only checkout, not an active pack provider. Do not build/stage/deploy this retired feature
+unless the user explicitly reactivates it. Former local source gate: `./gradlew verifyFull`.
 
-This repository contains the Better Content-owned Forge mod **Better Ratlantis Logistics**.
-
-- Mod ID: `better_ratlantis_logistics`
-- Artifact: `better-ratlantis-logistics-<version>.jar`
-- Java 17, Minecraft 1.20.1, Forge 47.4.13
-
-## Validation and release
-
-Run `./gradlew verifyFull`, then commit and push each coherent change. Do not commit build output or runtime worlds.
+Read [shared workspace policy](../../better-content-modpack/docs/policies/workspace.md)
+and [inventory/status](../../better-content-modpack/docs/custom-mod-workspace.md).
+Docs-only changes use the shared document check and `git diff --check`.

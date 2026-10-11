@@ -1,4 +1,11 @@
-# Better Ratlantis Logistics
+# Better Ratlantis Logistics — retired
+
+## Scope and authority
+
+This checkout is history-only, not active build/deployment content. The former feature description
+below does not reactivate it. Read [local instructions](AGENTS.md) and the
+[shared documentation/policy index](../../better-content-modpack/docs/README.md).
+
 
 Better Content-owned Forge mod that makes Ratlantis the origin of scalable logistics.
 
